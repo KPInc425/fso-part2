@@ -2,12 +2,15 @@ import { useState } from 'react'
 
 const App = () => {
   const [persons, setPersons] = useState([
-    { name: 'Arto Hellas',
-      number: "555-555-4578"
-    }
-  ]) 
+    { name: 'Arto Hellas', number: '040-123456', id: 1 },
+    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
+    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
+    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
+  ])
   const [newName, setNewName] = useState('');
   const [newNum, setNewNum] = useState('');
+  const [newFilter, setNewFilter] = useState('');
+  const [showAll, setShowAll] = useState(true);
 
   const handleNameChange = (e) => {
     console.log(e.target.value);
@@ -19,6 +22,33 @@ const App = () => {
     setNewNum(e.target.value);
   }
 
+  const handleFilterChange = (e) => {
+    console.log(e.target.value.length);
+    if (e.target.value.length > 0) {
+      setShowAll(false);
+      setNewFilter(e.target.value.toLowerCase());
+    } else {
+      setShowAll(true);
+      setNewFilter('');
+    }
+  }
+
+  const filterPersons = (persons) => {
+    let filteredPersons = persons.filter((person) => {
+    console.log(person);
+    console.log(person.name.slice(0, newFilter.length));
+    
+    return person.name.slice(0, newFilter.length).toLowerCase() === newFilter;
+    })
+
+    return filteredPersons;
+
+  }
+
+  const personsToShow = showAll ? persons : persons.filter((person) => person.name.slice(0, newFilter.length).toLowerCase() === newFilter);
+  // const personsToShow = showAll ? persons : filterPersons(persons);
+  console.log(personsToShow);
+
   const addPerson = (e) => {
     e.preventDefault();
     if (newName === '' || newNum === '') {
@@ -28,14 +58,21 @@ const App = () => {
     if (persons.find((person) => person.name === newName)) {
       return alert(`${newName} is already in the phonebook`);
     }
-    const newPerson = { name: newName, number: newNum };
+    // Check if phonebook already contains number (Not sure this will work with a string)
+    if (persons.find((person) => person.number === newNum)) {
+      return alert(`${newNum} is already in the phonebook`);
+    }
+    const newPerson = { name: newName, number: newNum, id: persons.length + 1};
     return setPersons(persons.concat(newPerson));
     
   }
 
+
+
   return (
     <div>
       <h2>Phonebook</h2>
+      Filter shown with <input onChange={handleFilterChange}/>
       <form onSubmit={addPerson}>
         <div>
           *Name: <input onChange={handleNameChange}/>
@@ -48,7 +85,7 @@ const App = () => {
         </div>
       </form>
       <h2>Numbers</h2>
-      <Entries persons={ persons } /> 
+      <Entries persons={ personsToShow } /> 
       <div>debug: {newName}</div>
     </div>
   )
@@ -57,7 +94,7 @@ const App = () => {
 const Entries = ({ persons }) => {
   return (
     <div>
-      { persons.map((person) => <Entry key={person.name} name={person.name} number={ person.number } />) }
+      { persons.map((person) => <Entry key={person.id} name={person.name} number={ person.number } />) }
     </div>
   )
 }
