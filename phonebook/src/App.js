@@ -1,16 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios';
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNum, setNewNum] = useState('');
   const [newFilter, setNewFilter] = useState('');
   const [showAll, setShowAll] = useState(true);
+
+  useEffect(() => {
+    axios
+    .get("http://localhost:3001/persons")
+    .then(response => {
+      console.log(response);
+      setPersons(response.data);
+    })
+  }, [])
 
   const handleNameChange = (e) => {
     // console.log(e.target.value);
@@ -33,21 +38,9 @@ const App = () => {
     }
   }
 
-  // const filterPersons = (persons) => {
-  //   let filteredPersons = persons.filter((person) => {
-  //   console.log(person);
-  //   console.log(person.name.slice(0, newFilter.length));
-    
-  //   return person.name.slice(0, newFilter.length).toLowerCase() === newFilter;
-  //   })
-
-  //   return filteredPersons;
-
-  // }
 
   const personsToShow = showAll ? persons : persons.filter((person) => person.name.slice(0, newFilter.length).toLowerCase() === newFilter);
-  // const personsToShow = showAll ? persons : filterPersons(persons);
-  // console.log(personsToShow);
+
 
   const addPerson = (e) => {
     e.preventDefault();
