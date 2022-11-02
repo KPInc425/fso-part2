@@ -62,8 +62,13 @@ const App = () => {
     Array.from(document.querySelector('form').querySelectorAll('input')).forEach((input) => {
       input.value = '';
     })
-    return setPersons(persons.concat(newPerson));
-    
+
+    // Add new person to json server
+    axios
+      .post("http://localhost:3001/persons", newPerson)
+      .then(response => {
+        return setPersons(persons.concat(response.data));
+      })
   }
 
 
