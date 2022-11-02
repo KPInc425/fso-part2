@@ -5,7 +5,6 @@ function App() {
 
   const [countries, setCountries] = useState([]);
   const [newSearch, setNewSearch] = useState('');
-  const [showFiltered, setShowFiltered]  = useState(false);
   const [filteredCountries, setFilteredCountries] = useState([]);
 
 
@@ -22,11 +21,9 @@ function App() {
     console.log(e.target.value);
     setNewSearch(e.target.value.toLowerCase());
     if (e.target.value.length > 0) {
-      setShowFiltered(true);
       console.log(countries.filter((country) => country.name.common.slice(0, newSearch.length).toLowerCase() === newSearch));
       setFilteredCountries(countries.filter((country) => country.name.common.slice(0, newSearch.length).toLowerCase() === newSearch));
     } else {
-      setShowFiltered(false);
       setNewSearch('');
       setFilteredCountries([]);
     }
@@ -63,12 +60,12 @@ const Entries = ({ filteredCountries, setChosen }) => {
   } else if (filteredCountries.length === 1) {
     let country = filteredCountries[0];
     return (
-      <ChosenEntry name={ country.name.common } capital={ country.capital[0] } area={ country.area } languages={ country.languages} flag={country.flags.png} />
+      <ChosenEntry name={ country.name.common } capital={ country.capital[0] } area={ country.area } languages={ country.languages} flag={country.flags.png} location={country.latlng} />
     )
   } else {
     return (
       <div>
-        { filteredCountries.map((country) => <Entry key={country.cca2} name={country.name.common} setChosen={ setChosen } />)}
+        { filteredCountries.map(( country ) => <Entry key={ country.cca2 } name={ country.name.common } setChosen={ setChosen } />)}
       </div>
     )
   } 
@@ -82,20 +79,41 @@ const Entry = ({ name, setChosen }) => {
   )
 }
 
-const ChosenEntry = ({name, capital, area, languages, flag}) => {
+const ChosenEntry = ({name, capital, area, languages, flag, location}) => {
+  const [countryTemp, setCountryTemp] = useState('0°F');
+  const [weatherIcon, setWeatherIcon] = useState('');
+  const [windSpeed, setWindSpeed] = useState(0);
   console.log(languages);
   console.log(flag);
+  console.log(location);
+  const api_key = process.env.REACT_APP_API_KEY;
+  useEffect(() => {
+    axios
+    .get(`https://api.openweathermap.org/data/2.5/weather?lat=${location[0]}&lon=${location[1]}&appid=${api_key}&units=imperial`)
+    .then(response => {
+      console.log(response);
+      let weatherData = response.data;
+      setCountryTemp(`${weatherData.main.temp}°F`);
+      setWeatherIcon(weatherData.weather[0].icon);
+      setWindSpeed(weatherData.wind.speed);
+    })
+  }, []); 
   return (
     <div>
       <h2> {name} </h2>
       <p>Capital: {capital}</p>
-      <p>Area: {area}</p>
+      <p>Area: {area.toLocaleString()}</p>
 
       <h3>Languages:</h3>
       <ul>
         <Languages languages={ languages } />
       </ul>
       <img src={ flag } alt={ 'flag' } />
+
+      <h2> Weather in {name}</h2>
+      <p>Temperature { countryTemp }</p>
+      <img src={`http://openweathermap.org/img/wn/${weatherIcon}@2x.png`} alt={"current weather"}/>
+      <p>Wind: { windSpeed } m/s</p> 
     </div>
   )
 }
