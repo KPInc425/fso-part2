@@ -20,7 +20,7 @@ function App() {
 
   const handleSearchChange = (e) => {
     console.log(e.target.value);
-    setNewSearch(e.target.value);
+    setNewSearch(e.target.value.toLowerCase());
     if (e.target.value.length > 0) {
       setShowFiltered(true);
       console.log(countries.filter((country) => country.name.common.slice(0, newSearch.length).toLowerCase() === newSearch));
@@ -33,6 +33,11 @@ function App() {
 
   }
 
+  const setChosen = (e) => {
+    const chosenCountry = e.target.parentNode.textContent.slice(0, -4).toLowerCase().trim();
+    setFilteredCountries(countries.filter((country) => country.name.common.toLowerCase() === chosenCountry));
+  }
+
   console.log(filteredCountries);
 
   return (
@@ -40,12 +45,12 @@ function App() {
       <form>
         Find Countries: <input placeholder="Input country name..." onChange={ handleSearchChange }></input>
       </form>
-      <Entries filteredCountries={ filteredCountries } /> 
+      <Entries filteredCountries={ filteredCountries } setChosen={ setChosen } /> 
     </div>
   );
 }
 
-const Entries = ({ filteredCountries }) => {
+const Entries = ({ filteredCountries, setChosen }) => {
   console.log(filteredCountries);
   if (filteredCountries.length <= 0) {
     return (
@@ -63,16 +68,16 @@ const Entries = ({ filteredCountries }) => {
   } else {
     return (
       <div>
-        { filteredCountries.map((country) => <Entry key={country.cca2} name={country.name.common} />)}
+        { filteredCountries.map((country) => <Entry key={country.cca2} name={country.name.common} setChosen={ setChosen } />)}
       </div>
     )
   } 
 }
 
-const Entry = ({ name }) => {
+const Entry = ({ name, setChosen }) => {
   return (
     <div>
-      <p> { name }</p>
+      <div>{ name } <button onClick={ setChosen }>Show</button></div>
     </div>
   )
 }
