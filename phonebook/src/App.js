@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios';
+import phonebookService from './services/phonebook.js';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -9,11 +9,11 @@ const App = () => {
   const [showAll, setShowAll] = useState(true);
 
   useEffect(() => {
-    axios
-    .get("http://localhost:3001/persons")
-    .then(response => {
-      console.log(response);
-      setPersons(response.data);
+    phonebookService
+    .getAll()
+    .then(initialPhonebook => {
+      console.log(initialPhonebook);
+      setPersons(initialPhonebook);
     })
   }, [])
 
@@ -64,10 +64,10 @@ const App = () => {
     })
 
     // Add new person to json server
-    axios
-      .post("http://localhost:3001/persons", newPerson)
-      .then(response => {
-        return setPersons(persons.concat(response.data));
+    phonebookService
+      .create(newPerson)
+      .then(returnedNumber => {
+        return setPersons(persons.concat(returnedNumber));
       })
   }
 
