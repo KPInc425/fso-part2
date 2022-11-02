@@ -48,27 +48,43 @@ const App = () => {
       return alert('You must fill in all fields!');
     }
     // Check if phonebook already contains added name
-    if (persons.find((person) => person.name === newName)) {
-      return alert(`${newName} is already in the phonebook`);
-    }
+    const personChose = persons.find((person) => person.name === newName);
+    if (personChose) {
+     if (window.confirm(`${newName} is already in the phonebook, replace old number with new one?`))
+      console.log(personChose);
+      const changedNumber = { ...personChose, number: newNum };
+      console.log(changedNumber);
+      phonebookService
+        .updateNum(personChose.id, changedNumber)
+        .then(returnedPerson => {
+          console.log(personChose.id);
+          const updatedArray = persons.map(person => person.id !== personChose.id ? person : returnedPerson);
+          console.log(updatedArray);
+          return setPersons(updatedArray);
+        })
+        .catch(error => {
+          alert('Change number operation failed');
+        })
     // Check if phonebook already contains number (Not sure this will work with a string)
-    if (persons.find((person) => person.number === newNum)) {
+    } else if (persons.find((person) => person.number === newNum)) {
       return alert(`${newNum} is already in the phonebook`);
-    }
-    const newPerson = { name: newName, number: newNum, id: persons.length + 1};
-    setNewName('');
-    setNewNum('');
-    // Query and reset all form inputs after adding person
-    Array.from(document.querySelector('form').querySelectorAll('input')).forEach((input) => {
-      input.value = '';
-    })
-
-    // Add new person to json server
-    phonebookService
-      .create(newPerson)
-      .then(returnedNumber => {
-        return setPersons(persons.concat(returnedNumber));
+    } else {
+      const newPerson = { name: newName, number: newNum, id: persons.length + 1};
+      setNewName('');
+      setNewNum('');
+      // Query and reset all form inputs after adding person
+      Array.from(document.querySelector('form').querySelectorAll('input')).forEach((input) => {
+        input.value = '';
       })
+  
+      // Add new person to json server
+      phonebookService
+        .create(newPerson)
+        .then(returnedNumber => {
+          return setPersons(persons.concat(returnedNumber));
+        })
+    }
+
   }
 
   const deleteNum = (e) => {
