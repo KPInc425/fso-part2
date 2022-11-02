@@ -71,6 +71,24 @@ const App = () => {
       })
   }
 
+  const deleteNum = (e) => {
+    console.log(typeof e.target.getAttribute('data-id'))
+    const target = e.target.getAttribute('data-id');
+    if (window.confirm(`Are you sure you want to delete ${e.target.parentNode.textContent.slice(0, -6)}`)) {
+      phonebookService
+      .deleteNum(target)
+      .then(response => {
+        console.log(`Deleted Number ${e.target.parentNode.textContent.slice(0, -6)}`);
+        phonebookService
+          .getAll()
+          .then(returnedNumbers => {
+            setPersons(returnedNumbers);
+          })  
+      });
+    }
+
+  }
+
 
 
   return (
@@ -84,7 +102,7 @@ const App = () => {
       <NewPersonForm addPerson={addPerson} handleNameChange={handleNameChange} handleNumChange={handleNumChange} />
 
       <h2>Numbers</h2>
-      <Entries persons={ personsToShow } /> 
+      <Entries persons={ personsToShow } deleteNum={ deleteNum } /> 
       {/* <div>debug: {newName}</div> */}
     </div>
   )
@@ -116,18 +134,18 @@ const NewPersonForm = ({ addPerson, handleNameChange, handleNumChange}) => {
   )
 }
 
-const Entries = ({ persons }) => {
+const Entries = ({ persons, deleteNum }) => {
   return (
     <div>
-      { persons.map((person) => <Entry key={person.id} name={person.name} number={ person.number } />) }
+      { persons.map((person) => <Entry key={person.id} id={person.id} name={person.name} number={ person.number } deleteNum={ deleteNum } />) }
     </div>
   )
 }
 
-const Entry = ({ name, number }) => {
+const Entry = ({ name, number, deleteNum, id}) => {
   return (
     <div>
-      <p>{ name } { number }</p>
+      { name } { number } <button onClick={ deleteNum } data-id={id}>Delete</button>
     </div>
   )
 }
