@@ -7,6 +7,8 @@ const App = () => {
   const [newNum, setNewNum] = useState('');
   const [newFilter, setNewFilter] = useState('');
   const [showAll, setShowAll] = useState(true);
+  const [changeMessage, setChangeMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     phonebookService
@@ -60,16 +62,26 @@ const App = () => {
           console.log(personChose.id);
           const updatedArray = persons.map(person => person.id !== personChose.id ? person : returnedPerson);
           console.log(updatedArray);
+          // Refactor this out into its own function
+          setChangeMessage(`${ newName }'s number has been replaced with ${ newNum }`);
+          setTimeout(() => {
+            setChangeMessage(null);
+          }, 3000);
+          // ^^^^
           return setPersons(updatedArray);
         })
         .catch(error => {
-          alert('Change number operation failed');
+          setErrorMessage(`Change number operation failed, ${newName} can't be found on server!`);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 3000);
         })
     // Check if phonebook already contains number (Not sure this will work with a string)
     } else if (persons.find((person) => person.number === newNum)) {
       return alert(`${newNum} is already in the phonebook`);
     } else {
-      const newPerson = { name: newName, number: newNum, id: persons.length + 1};
+      console.log(persons);
+      const newPerson = { name: newName, number: newNum, id: (persons[persons.length - 1].id + 1)};
       setNewName('');
       setNewNum('');
       // Query and reset all form inputs after adding person
@@ -81,7 +93,17 @@ const App = () => {
       phonebookService
         .create(newPerson)
         .then(returnedNumber => {
+          setChangeMessage(`${ newName }'s number ${ newNum } has been added to the phonebook!`);
+          setTimeout(() => {
+            setChangeMessage(null);
+          }, 3000);
           return setPersons(persons.concat(returnedNumber));
+        })
+        .catch(error => {
+          setErrorMessage(`Failed to add ${newName}, DB corrupted?`);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 3000);
         })
     }
 
@@ -110,6 +132,9 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <NotificationMessage message={ changeMessage } />
+      <ErrorMessage message={ errorMessage } />
 
       <Filter handleFilterChange={handleFilterChange}/>
 
@@ -162,6 +187,49 @@ const Entry = ({ name, number, deleteNum, id}) => {
   return (
     <div>
       { name } { number } <button onClick={ deleteNum } data-id={id}>Delete</button>
+    </div>
+  )
+}
+
+const NotificationMessage = ( { message }) => {
+  const notificationStyle = {
+    color: 'green', 
+    background: 'lightgrey',
+    fontSize: 20,
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  };
+
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='changeNotify' style={ notificationStyle }>
+      { message }
+    </div>
+  )
+}
+const ErrorMessage = ( { message }) => {
+  const notificationStyle = {
+    color: 'red', 
+    background: 'lightgrey',
+    fontSize: 20,
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  };
+
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className='changeNotify' style={ notificationStyle }>
+      { message }
     </div>
   )
 }
